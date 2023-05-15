@@ -48,17 +48,25 @@ const testfunc = async (url, prompt) => {
       contents.push(text);
     });
     $("img").each((index, element) => {
-      const imgUrl = $(element).attr("src");
+      var imgUrl = $(element).attr("src");
+      console.log(imgUrl);
+      if (imgUrl.slice(0, 4) !== "http") {
+        const uurl = new URL(url);
+        const mainurl = uurl.origin;
+        imgUrl = mainurl + "/" + imgUrl;
+      }
+      console.log(imgUrl);
       imageUrls.push(imgUrl);
     });
+
     imageUrls = imageUrls.filter(
       (item) =>
         item.slice(item.length - 4, item.length) !== ".svg" &&
         item.slice(item.length - 4, item.length) !== ".png"
     );
-    imageUrls = imageUrls.filter((item) => item.slice(0, 4) == "http");
+    // imageUrls = imageUrls.filter((item) => item.slice(0, 4) == "http");
   });
-
+  console.log("~~~~~~~~~~", imageUrls);
   const summarizedContent = await summarize(contents + "\\n" + prompt);
   const mainImgUrl = await findBiggestImage(imageUrls)
     .then((mainImgUrl) => {
@@ -71,7 +79,7 @@ const testfunc = async (url, prompt) => {
     url: url,
     headline: title,
     content: summarizedContent,
-    imgurl: mainImgUrl,
+    imgurl: mainImgUrl
   };
 };
 
@@ -79,16 +87,18 @@ const testfunc = async (url, prompt) => {
 artRouter.post("/", async (req, res) => {
   const urls = req.body.urls;
   const prompt = req.body.prompt;
-
+  const totalProm = req.body.totalProm;
+  const tones = req.body.tones;
+  const promWithTone = totalProm + "\\" + "The topic is " + tones;
   const result = await Promise.all(urls.map((url) => testfunc(url, prompt)));
   const totalcontents = result.map((item) => {
     return item.content;
   });
 
-  const totalresult = await summarize(totalcontents + "\\n" + prompt);
+  const totalresult = await summarize(totalcontents + "\\n" + promWithTone);
   res.status(201).send({
     result: result,
-    totalreulst: totalresult,
+    totalreulst: totalresult
   });
 });
 
