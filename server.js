@@ -20,6 +20,68 @@ app.get("/", async (req, res) => {
   res.send({ result: "Hello" });
 });
 
+//Route for create articles
 app.use("/api/article", artRouter);
+
+//MariaDB database connection
+const config = require("./config/db.config.js");
+const mariadb = require("mariadb");
+
+const db = require("./models");
+const Role = db.role;
+
+const pool = mariadb.createPool({
+  host: config.HOST,
+  user: config.USER,
+  password: config.PASSWORD,
+  connectionLimit: 5
+});
+
+async function createDatabase() {
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    await conn.query(
+      `CREATE DATABASE IF NOT EXISTS ${config.DB}`,
+      function (err, results) {
+        console.log(results);
+        console.log(err);
+      }
+    );
+  } catch (err) {
+    throw err;
+  } finally {
+    if (conn) return conn.end();
+  }
+}
+
+createDatabase().then(() => {
+  db.sequelize.sync({ force: true }).then(() => {
+    console.log("Drop and Resync Db");
+    initial();
+  });
+});
+
+function initial() {
+  Role.create({
+    id: 1,
+    name: "user"
+  });
+
+  Role.create({
+    id: 2,
+    name: "moderator"
+  });
+
+  Role.create({
+    id: 3,
+    name: "admin"
+  });
+}
+
+// routes
+
+require("./routes/auth.routes")(app);
+require("./routes/user.routes")(app);
 
 app.listen(5000);
