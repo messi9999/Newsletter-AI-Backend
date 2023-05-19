@@ -15,8 +15,8 @@ const decrypt = (text) => {
 const config = {
   headers: {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${decrypt(process.env.OPENAI_API_KEY)}`,
-  },
+    Authorization: `Bearer ${decrypt(process.env.OPENAI_API_KEY)}`
+  }
 };
 
 const summarize = async (prom) => {
@@ -25,7 +25,7 @@ const summarize = async (prom) => {
     prompt: prom,
     max_tokens: 500,
     temperature: 0.1,
-    n: 1,
+    n: 1
   };
   var answer;
   var iserror;

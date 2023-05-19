@@ -1,13 +1,13 @@
 const express = require("express");
 const axios = require("axios");
 const cheerio = require("cheerio");
-const request = require("request");
+// const request = require("request");
 const http = require("http");
-const summarize = require("../openaicom");
+const summarize = require("../func/openaicom");
 const { title } = require("process");
 const artRouter = express.Router();
 
-const fetchImageSize = require("../getImagesize");
+const fetchImageSize = require("../func/getImagesize");
 
 async function findBiggestImage(imageUrls) {
   try {
@@ -64,9 +64,7 @@ const testfunc = async (url, prompt) => {
         item.slice(item.length - 4, item.length) !== ".svg" &&
         item.slice(item.length - 4, item.length) !== ".png"
     );
-    // imageUrls = imageUrls.filter((item) => item.slice(0, 4) == "http");
   });
-  console.log("~~~~~~~~~~", imageUrls);
   const summarizedContent = await summarize(contents + "\\n" + prompt);
   const mainImgUrl = await findBiggestImage(imageUrls)
     .then((mainImgUrl) => {
@@ -86,16 +84,21 @@ const testfunc = async (url, prompt) => {
 // POST
 artRouter.post("/", async (req, res) => {
   const urls = req.body.urls;
-  const prompt = req.body.prompt;
-  const totalProm = req.body.totalProm;
   const tones = req.body.tones;
-  const promWithTone = totalProm + "\\" + "The topic is " + tones;
+  const styles = req.body.styles;
+  const prompt =
+    "Summarize this article as " +
+    styles +
+    ".\n" +
+    "Write a summary with " +
+    tones +
+    ".";
   const result = await Promise.all(urls.map((url) => testfunc(url, prompt)));
   const totalcontents = result.map((item) => {
     return item.content;
   });
 
-  const totalresult = await summarize(totalcontents + "\\n" + promWithTone);
+  const totalresult = await summarize(totalcontents + "\\n" + prompt);
   res.status(201).send({
     result: result,
     totalreulst: totalresult

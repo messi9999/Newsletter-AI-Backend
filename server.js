@@ -39,13 +39,16 @@ const pool = mariadb.createPool({
 
 async function createDatabase() {
   let conn;
+  console.log("!!!!!!!!!!!!!!!!!!!!!");
   try {
     conn = await pool.getConnection();
     await conn.query(
       `CREATE DATABASE IF NOT EXISTS ${config.DB}`,
       function (err, results) {
+        console.log("~~~~~~~~~~~~~~~~~~~Created new data");
         console.log(results);
         console.log(err);
+        `1`;
       }
     );
   } catch (err) {
@@ -55,29 +58,29 @@ async function createDatabase() {
   }
 }
 
-createDatabase().then(() => {
-  db.sequelize.sync({ force: true }).then(() => {
-    console.log("Drop and Resync Db");
-    initial();
-  });
-});
+// db.sequelize.sync({ force: true }).then(() => {
+//   console.log("Drop and Resync Db");
+//   initial();
+// });
 
-function initial() {
-  Role.create({
-    id: 1,
-    name: "user"
-  });
+// createDatabase().then(() => {
+//   db.sequelize.sync({ force: true }).then(() => {
+//     console.log("Drop and Resync Db");
+//     initial();
+//   });
+// });
 
-  Role.create({
-    id: 2,
-    name: "moderator"
-  });
+// function initial() {
+//   Role.create({
+//     id: 1,
+//     name: "user"
+//   });
 
-  Role.create({
-    id: 3,
-    name: "admin"
-  });
-}
+//   Role.create({
+//     id: 3,
+//     name: "admin"
+//   });
+// }
 
 // routes
 
