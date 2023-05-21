@@ -5,6 +5,9 @@ const cookieParser = require("cookie-parser");
 const http = require("http");
 const { title } = require("process");
 const artRouter = require("./routes/article");
+const paymentRouter = require("./routes/payment");
+
+const paymentRouter1 = require("./routes/payment1");
 
 const app = express();
 app.use(cors());
@@ -22,6 +25,12 @@ app.get("/", async (req, res) => {
 
 //Route for create articles
 app.use("/api/article", artRouter);
+
+//Route for payment
+app.use("/api/payment", paymentRouter);
+
+/////////////
+app.use("/api/payment1", paymentRouter1);
 
 //MariaDB database connection
 const config = require("./config/db.config.js");

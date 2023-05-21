@@ -86,6 +86,7 @@ artRouter.post("/", async (req, res) => {
   const urls = req.body.urls;
   const tones = req.body.tones;
   const styles = req.body.styles;
+  console.log(req.body);
   const prompt =
     "Summarize this article as " +
     styles +

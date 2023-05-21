@@ -9,13 +9,13 @@ var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
 
 exports.signup = (req, res) => {
-  // Save User to Database
-  // console.log(req.body);
+  const currentDate = new Date();
+  const expireDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
   User.create({
     username: req.body.username,
     email: req.body.email,
     password: bcrypt.hashSync(req.body.password, 8),
-    expiredays: 7
+    expiredate: expireDate.toDateString()
   })
     .then((user) => {
       if (req.body.roles) {
@@ -74,11 +74,17 @@ exports.signin = (req, res) => {
         for (let i = 0; i < roles.length; i++) {
           authorities.push("ROLE_" + roles[i].name.toUpperCase());
         }
+        var expiredays =
+          (user.expiredate.getTime() - user.createdAt.getTime()) /
+          (1000 * 3600 * 24);
+        if (expiredays < 0) {
+          expiredays = 0;
+        }
         res.status(200).send({
           id: user.id,
           username: user.username,
           email: user.email,
-          expiredays: user.expiredays,
+          expiredays: Math.ceil(expiredays),
           roles: authorities,
           accessToken: token
         });
