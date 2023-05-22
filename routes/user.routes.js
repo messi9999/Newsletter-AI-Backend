@@ -24,4 +24,16 @@ module.exports = function (app) {
     [authJwt.verifyToken, authJwt.isAdmin],
     controller.adminBoard
   );
+
+  // Create a new Tutorial
+  app.post("/api/create", controller.create);
+
+  // Retrieve all Tutorials
+  app.get("/api/all", controller.findAll);
+
+  // Update a Tutorial with id
+  app.put("/api/update/:id", controller.update);
+
+  // Delete a Tutorial with id
+  app.delete("/api/delete/:id", controller.delete);
 };
