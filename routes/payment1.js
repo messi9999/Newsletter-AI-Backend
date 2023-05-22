@@ -26,7 +26,7 @@ const chargeCustomer = async (customerId) => {
   try {
     // Charge the customer and payment method immediately
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: 10.05,
+      amount: 19.95,
       currency: "usd",
       customer: customerId,
       payment_method: paymentMethods.data[0].id,

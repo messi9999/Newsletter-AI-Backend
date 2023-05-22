@@ -12,7 +12,12 @@ module.exports = function (app) {
 
   app.get("/api/test/all", controller.allAccess);
 
-  app.get("/api/test/user", [authJwt.verifyToken], controller.userBoard);
+  app.get("/api/test/user/:id", [authJwt.verifyToken], controller.userBoard);
+
+  app.get("/api/text/user/updateExpireday/:id", [
+    authJwt.verifyToken,
+    controller.updateExpireDay
+  ]);
 
   app.get(
     "/api/test/admin",

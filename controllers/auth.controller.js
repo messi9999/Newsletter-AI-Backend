@@ -74,9 +74,7 @@ exports.signin = (req, res) => {
         for (let i = 0; i < roles.length; i++) {
           authorities.push("ROLE_" + roles[i].name.toUpperCase());
         }
-        var expiredays =
-          (user.expiredate.getTime() - user.createdAt.getTime()) /
-          (1000 * 3600 * 24);
+        var expiredays = (user.expiredate - Date.now()) / (1000 * 3600 * 24);
         if (expiredays < 0) {
           expiredays = 0;
         }
