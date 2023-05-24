@@ -1,7 +1,6 @@
 const express = require("express");
 const axios = require("axios");
 const cheerio = require("cheerio");
-// const request = require("request");
 const http = require("http");
 const summarize = require("../func/openaicom");
 const { title } = require("process");
@@ -34,11 +33,10 @@ async function findBiggestImage(imageUrls) {
   }
 }
 
-const testfunc = async (url, prompt) => {
+const testfunc = async (url, prompt, withimg) => {
   var contents = [];
   var imageUrls = [];
   var title = "";
-
   await axios.get(url).then((response) => {
     const html = response.data;
     const $ = cheerio.load(html);
@@ -47,32 +45,37 @@ const testfunc = async (url, prompt) => {
       const text = $(element).text();
       contents.push(text);
     });
-    $("img").each((index, element) => {
-      var imgUrl = $(element).attr("src");
-      console.log(imgUrl);
-      if (imgUrl.slice(0, 4) !== "http") {
-        const uurl = new URL(url);
-        const mainurl = uurl.origin;
-        imgUrl = mainurl + "/" + imgUrl;
-      }
-      console.log(imgUrl);
-      imageUrls.push(imgUrl);
-    });
+    if (withimg) {
+      $("img").each((index, element) => {
+        var imgUrl = $(element).attr("src");
+        if (imgUrl.slice(0, 4) !== "http") {
+          const uurl = new URL(url);
+          const mainurl = uurl.origin;
+          imgUrl = mainurl + "/" + imgUrl;
+        }
+        imageUrls.push(imgUrl);
+      });
 
-    imageUrls = imageUrls.filter(
-      (item) =>
-        item.slice(item.length - 4, item.length) !== ".svg" &&
-        item.slice(item.length - 4, item.length) !== ".png"
-    );
+      imageUrls = imageUrls.filter(
+        (item) =>
+          item.slice(item.length - 4, item.length) !== ".svg" &&
+          item.slice(item.length - 4, item.length) !== ".png"
+      );
+    }
   });
+
+  var mainImgUrl = "";
+
+  if (withimg) {
+    mainImgUrl = await findBiggestImage(imageUrls)
+      .then((mainImgUrl) => {
+        return mainImgUrl;
+      })
+      .catch((error) => {
+        console.error("Error finding the biggest image:", error);
+      });
+  }
   const summarizedContent = await summarize(contents + "\\n" + prompt);
-  const mainImgUrl = await findBiggestImage(imageUrls)
-    .then((mainImgUrl) => {
-      return mainImgUrl;
-    })
-    .catch((error) => {
-      console.error("Error finding the biggest image:", error);
-    });
   return {
     url: url,
     headline: title,
@@ -86,7 +89,7 @@ artRouter.post("/", async (req, res) => {
   const urls = req.body.urls;
   const tones = req.body.tones;
   const styles = req.body.styles;
-  console.log(req.body);
+  const withimg = req.body.withimg;
   const prompt =
     "Summarize this article as " +
     styles +
@@ -94,15 +97,17 @@ artRouter.post("/", async (req, res) => {
     "Write a summary with " +
     tones +
     ".";
-  const result = await Promise.all(urls.map((url) => testfunc(url, prompt)));
-  const totalcontents = result.map((item) => {
-    return item.content;
-  });
+  const result = await Promise.all(
+    urls.map((url) => testfunc(url, prompt, withimg))
+  );
+  // const totalcontents = result.map((item) => {
+  //   return item.content;
+  // });
 
-  const totalresult = await summarize(totalcontents + "\\n" + prompt);
+  // const totalresult = await summarize(totalcontents + "\\n" + prompt);
   res.status(201).send({
-    result: result,
-    totalreulst: totalresult
+    result: result
+    // totalreulst: totalresult
   });
 });
 

@@ -67,11 +67,6 @@ async function createDatabase() {
   }
 }
 
-// db.sequelize.sync({ force: true }).then(() => {
-//   console.log("Drop and Resync Db");
-//   initial();
-// });
-
 // createDatabase().then(() => {
 //   db.sequelize.sync({ force: true }).then(() => {
 //     console.log("Drop and Resync Db");
