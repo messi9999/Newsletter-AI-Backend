@@ -74,17 +74,17 @@ async function createDatabase() {
 //   });
 // });
 
-// function initial() {
-//   Role.create({
-//     id: 1,
-//     name: "user"
-//   });
+function initial() {
+  Role.create({
+    id: 1,
+    name: "user"
+  });
 
-//   Role.create({
-//     id: 3,
-//     name: "admin"
-//   });
-// }
+  Role.create({
+    id: 3,
+    name: "admin"
+  });
+}
 
 // routes
 

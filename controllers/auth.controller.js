@@ -11,11 +11,30 @@ var bcrypt = require("bcryptjs");
 exports.signup = (req, res) => {
   const currentDate = new Date();
   const expireDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const isPayment = false;
+  const cardemail = req.body.email;
+  const cardnumber = "1234 1234 1234 1234";
+  const exp = new Date();
+  const cvc = "Null";
+  const country = "Null";
+
+  const year = currentDate.getFullYear();
+  const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+  const day = String(currentDate.getDate()).padStart(2, "0");
+
+  const formattedDate = `${year}-${month}-${day}`;
+
   User.create({
     username: req.body.username,
     email: req.body.email,
     password: bcrypt.hashSync(req.body.password, 8),
-    expiredate: expireDate
+    isPayment: isPayment,
+    expiredate: expireDate,
+    cardemail: cardemail,
+    cardnumber: cardnumber,
+    exp: formattedDate,
+    cvc: cvc,
+    country: country
   })
     .then((user) => {
       if (req.body.roles) {
@@ -84,7 +103,16 @@ exports.signin = (req, res) => {
           email: user.email,
           expiredays: Math.ceil(expiredays),
           roles: authorities,
-          accessToken: token
+          isPayment: user.isPayment,
+          cardemail: user.cardemail,
+          cardnumber: user.cardnumber,
+          exp: user.exp,
+          cvs: user.cvc,
+          coutry: user.country,
+          accessToken: token,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+          expiredate: user.expiredate
         });
       });
     })

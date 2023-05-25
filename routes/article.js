@@ -75,30 +75,34 @@ const testfunc = async (url, prompt, withimg) => {
         console.error("Error finding the biggest image:", error);
       });
   }
-  const summarizedContent = await summarize(contents + "\\n" + prompt);
+  const summarizedContent = await summarize(`${contents} \n ${prompt[0]}`);
+  const summarizedHeadline = await summarize(`${contents} \n ${prompt[1]}`);
   return {
     url: url,
-    headline: title,
+    headline: summarizedHeadline,
     content: summarizedContent,
     imgurl: mainImgUrl
   };
 };
 
+// "Summarize this article as " +
+//   styles +
+//   ".\n" +
+//   "Write a summary with " +
+//   tones +
+//   ".";
 // POST
 artRouter.post("/", async (req, res) => {
   const urls = req.body.urls;
   const tones = req.body.tones;
   const styles = req.body.styles;
   const withimg = req.body.withimg;
-  const prompt =
-    "Summarize this article as " +
-    styles +
-    ".\n" +
-    "Write a summary with " +
-    tones +
-    ".";
+  // const prompt = `\n Create summarized content as ${styles} with ${tones} topic as text foramt and create headline from this article as json format. The keys are 'headline' and 'content'`;
+  const prompt1 =
+    "Summarize this articel as bullet style with 4 points and as the topic of education";
+  const prompt2 = "Create headline of this artice";
   const result = await Promise.all(
-    urls.map((url) => testfunc(url, prompt, withimg))
+    urls.map((url) => testfunc(url, [prompt1, prompt2], withimg))
   );
   // const totalcontents = result.map((item) => {
   //   return item.content;

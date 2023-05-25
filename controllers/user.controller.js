@@ -15,13 +15,59 @@ exports.userBoard = (req, res) => {
   const id = req.params.id;
   console.log(id);
 
-  User.findByPk(id)
-    .then((data) => {
-      if (data) {
+  User.findOne({
+    where: {
+      id: id
+    }
+  })
+    .then((user) => {
+      console.log("first~~~~~~~~", user);
+      if (user) {
+        var token = jwt.sign({ id: user.id }, config.secret, {
+          expiresIn: 86400 // 24 hours
+        });
+        var authorities = [];
         // const expireday = data.expiredate - Date.now()
-        data.dataValues.expireday =
-          (data.expiredate - Date.now()) / (3600 * 24 * 1000);
-        res.send(data);
+        user.getRoles().then((roles) => {
+          for (let i = 0; i < roles.length; i++) {
+            authorities.push("ROLE_" + roles[i].name.toUpperCase());
+          }
+          var expiredays = (user.expiredate - Date.now()) / (3600 * 24 * 1000);
+          console.log("~~~~~~", {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            expiredays: expiredays,
+            roles: authorities,
+            isPayment: user.isPayment,
+            cardemail: user.cardemail,
+            cardnumber: user.cardnumber,
+            exp: user.exp,
+            cvs: user.cvc,
+            coutry: user.country,
+            accessToken: token,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+            expiredate: user.expiredate
+          });
+          res.status(200).send({
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            expiredays: expiredays,
+            roles: authorities,
+            isPayment: user.isPayment,
+            cardemail: user.cardemail,
+            cardnumber: user.cardnumber,
+            exp: user.exp,
+            cvs: user.cvc,
+            coutry: user.country,
+            accessToken: token,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+            expiredate: user.expiredate
+          });
+        });
       } else {
         res.status(404).send({
           message: `Cannot find user with id=${id}.`
@@ -117,10 +163,12 @@ exports.findAll = (req, res) => {
 exports.update = (req, res) => {
   const id = req.params.id;
   var updatedata = req.body;
+  console.log("~~~~~~~~~~~~~~~~~~~");
+  console.log(updatedata);
   if (updatedata.password) {
     updatedata.password = bcrypt.hashSync(req.body.password, 8);
   }
-  User.update(req.body, {
+  User.update(updatedata, {
     where: { id: id }
   })
     .then((num) => {
