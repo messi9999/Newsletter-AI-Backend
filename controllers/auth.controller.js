@@ -13,15 +13,6 @@ exports.signup = (req, res) => {
   const expireDate = new Date();
   expireDate.setDate(currentDate.getDate() + 7);
 
-  console.log(currentDate);
-  console.log("expiredate", expireDate);
-
-  // const year = expireDate.getFullYear();
-  // const month = String(expireDate.getMonth() + 1).padStart(2, "0");
-  // const day = String(expireDate.getDate()).padStart(2, "0");
-
-  // const formattedDate = `${year}-${month}-${day}`;
-
   User.create({
     username: req.body.username,
     email: req.body.email,
@@ -90,12 +81,11 @@ exports.signin = (req, res) => {
         }
 
         const currentDate = new Date();
-        var expiredays = (user.expiredate - currentDate) / (1000 * 3600 * 24);
+        var expiredays = (user.expireDate - currentDate) / (1000 * 3600 * 24);
+
         if (expiredays < 0) {
           expiredays = 0;
         }
-        console.log(expiredays);
-
         res.status(200).send({
           id: user.id,
           username: user.username,

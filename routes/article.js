@@ -98,8 +98,7 @@ artRouter.post("/", async (req, res) => {
   const styles = req.body.styles;
   const withimg = req.body.withimg;
   // const prompt = `\n Create summarized content as ${styles} with ${tones} topic as text foramt and create headline from this article as json format. The keys are 'headline' and 'content'`;
-  const prompt1 =
-    "Summarize this articel as bullet style with 4 points and as the topic of education";
+  const prompt1 = `Summarize this articel as ${styles} and as the topic of ${tones}`;
   const prompt2 = "Create headline of this artice";
   const result = await Promise.all(
     urls.map((url) => testfunc(url, [prompt1, prompt2], withimg))
