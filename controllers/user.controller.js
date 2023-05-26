@@ -21,7 +21,6 @@ exports.userBoard = (req, res) => {
     }
   })
     .then((user) => {
-      console.log("first~~~~~~~~", user);
       if (user) {
         var token = jwt.sign({ id: user.id }, config.secret, {
           expiresIn: 86400 // 24 hours
@@ -33,39 +32,16 @@ exports.userBoard = (req, res) => {
             authorities.push("ROLE_" + roles[i].name.toUpperCase());
           }
           var expiredays = (user.expiredate - Date.now()) / (3600 * 24 * 1000);
-          console.log("~~~~~~", {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            expiredays: expiredays,
-            roles: authorities,
-            isPayment: user.isPayment,
-            cardemail: user.cardemail,
-            cardnumber: user.cardnumber,
-            exp: user.exp,
-            cvs: user.cvc,
-            coutry: user.country,
-            accessToken: token,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
-            expiredate: user.expiredate
-          });
           res.status(200).send({
             id: user.id,
             username: user.username,
             email: user.email,
             expiredays: expiredays,
             roles: authorities,
-            isPayment: user.isPayment,
-            cardemail: user.cardemail,
-            cardnumber: user.cardnumber,
-            exp: user.exp,
-            cvs: user.cvc,
-            coutry: user.country,
-            accessToken: token,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
-            expiredate: user.expiredate
+            subscriptionId: user.subscriptionId,
+            subscriptionStatus: user.subscriptionStatus,
+            expireDate: user.expireDate,
+            accessToken: token
           });
         });
       } else {
@@ -79,7 +55,6 @@ exports.userBoard = (req, res) => {
         message: "Error retrieving user with id=" + id
       });
     });
-  // res.status(200).send("User Content.");
 };
 
 exports.updateExpireDay = (req, res) => {

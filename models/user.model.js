@@ -9,26 +9,14 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
     password: {
       type: Sequelize.STRING
     },
-    isPayment: {
-      type: Sequelize.BOOLEAN
+    subscriptionId: {
+      type: Sequelize.STRING
     },
-    expiredate: {
+    subscriptionStatus: {
+      type: Sequelize.STRING
+    },
+    expireDate: {
       type: Sequelize.DATE
-    },
-    cardemail: {
-      type: Sequelize.STRING
-    },
-    cardnumber: {
-      type: Sequelize.STRING
-    },
-    exp: {
-      type: Sequelize.DataTypes.DATEONLY
-    },
-    cvc: {
-      type: Sequelize.STRING
-    },
-    country: {
-      type: Sequelize.STRING
     }
   });
 

@@ -5,9 +5,7 @@ const cookieParser = require("cookie-parser");
 const http = require("http");
 const { title } = require("process");
 const artRouter = require("./routes/article");
-const paymentRouter = require("./routes/payment");
-
-const paymentRouter1 = require("./routes/payment1");
+const payrouter = require("./routes/payment");
 
 const app = express();
 app.use(cors());
@@ -27,10 +25,7 @@ app.get("/", async (req, res) => {
 app.use("/api/article", artRouter);
 
 //Route for payment
-app.use("/api/payment", paymentRouter);
-
-/////////////
-app.use("/api/payment1", paymentRouter1);
+app.use("/api/payment", payrouter);
 
 //MariaDB database connection
 const config = require("./config/db.config.js");
@@ -48,13 +43,11 @@ const pool = mariadb.createPool({
 
 async function createDatabase() {
   let conn;
-  console.log("!!!!!!!!!!!!!!!!!!!!!");
   try {
     conn = await pool.getConnection();
     await conn.query(
       `CREATE DATABASE IF NOT EXISTS ${config.DB}`,
       function (err, results) {
-        console.log("~~~~~~~~~~~~~~~~~~~Created new data");
         console.log(results);
         console.log(err);
         `1`;
