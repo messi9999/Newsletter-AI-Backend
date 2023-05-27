@@ -97,8 +97,15 @@ artRouter.post("/", async (req, res) => {
   const tones = req.body.tones;
   const styles = req.body.styles;
   const withimg = req.body.withimg;
+  const withemoji = req.body.withemoji;
   // const prompt = `\n Create summarized content as ${styles} with ${tones} topic as text foramt and create headline from this article as json format. The keys are 'headline' and 'content'`;
-  const prompt1 = `Summarize this articel as ${styles} and as the topic of ${tones}`;
+  const prompt11 = `Summarize this articel as ${styles} which contanins different emojis at the first of every sentance and these emojis are related with the content of each sentance or paragraph, and as the topic of ${tones}`;
+  var prompt1 = "";
+  if (withemoji) {
+    prompt1 = `Summarize this articel as ${styles} and as the topic of ${tones}`;
+  } else {
+    prompt1 = `Summarize this articel as ${styles} which contanins different emojis at the first of every sentance and these emojis are related with the content of each sentance or paragraph, and as the topic of ${tones}`;
+  }
   const prompt2 = "Create headline of this artice";
   const result = await Promise.all(
     urls.map((url) => testfunc(url, [prompt1, prompt2], withimg))
