@@ -1,5 +1,7 @@
 const db = require("../models");
 const config = require("../config/auth.config");
+
+const stripe = require("stripe")(process.env.SECRET_KEY);
 const User = db.user;
 const Role = db.role;
 
@@ -8,7 +10,27 @@ const Op = db.Sequelize.Op;
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
 
-exports.signup = (req, res) => {
+exports.signup = async (req, res) => {
+  const email = req.body.email;
+
+  const customers = await stripe.customers.list({
+    email: email
+  });
+
+  var subscriptionId;
+  var subscriptionStatus;
+
+  for (const customer of customers.data) {
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customer.id
+    });
+    for (const subscription of subscriptions.data) {
+      subscriptionId = subscription.id;
+      subscriptionStatus = subscription.status;
+      // Do something with the subscription ID and status
+    }
+  }
+
   const currentDate = new Date();
   const expireDate = new Date();
   expireDate.setDate(currentDate.getDate() + 7);
@@ -17,8 +39,8 @@ exports.signup = (req, res) => {
     username: req.body.username,
     email: req.body.email,
     password: bcrypt.hashSync(req.body.password, 8),
-    subscriptionId: req.body.subscriptionId,
-    subscriptionStatus: req.body.subscriptionStatus,
+    subscriptionId: subscriptionId,
+    subscriptionStatus: subscriptionStatus,
     expireDate: expireDate
   })
     .then((user) => {
@@ -47,7 +69,6 @@ exports.signup = (req, res) => {
 };
 
 exports.signin = (req, res) => {
-  console.log(req.body);
   User.findOne({
     where: {
       username: req.body.username

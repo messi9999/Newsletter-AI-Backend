@@ -13,7 +13,6 @@ exports.allAccess = (req, res) => {
 
 exports.userBoard = (req, res) => {
   const id = req.params.id;
-  console.log(id);
 
   User.findOne({
     where: {
@@ -138,8 +137,6 @@ exports.findAll = (req, res) => {
 exports.update = (req, res) => {
   const id = req.params.id;
   var updatedata = req.body;
-  console.log("~~~~~~~~~~~~~~~~~~~");
-  console.log(updatedata);
   if (updatedata.password) {
     updatedata.password = bcrypt.hashSync(req.body.password, 8);
   }
