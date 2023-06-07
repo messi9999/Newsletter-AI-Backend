@@ -30,7 +30,7 @@ exports.userBoard = (req, res) => {
           for (let i = 0; i < roles.length; i++) {
             authorities.push("ROLE_" + roles[i].name.toUpperCase());
           }
-          var expiredays = (user.expiredate - Date.now()) / (3600 * 24 * 1000);
+          var expiredays = (user.expireDate - Date.now()) / (3600 * 24 * 1000);
           res.status(200).send({
             id: user.id,
             username: user.username,
@@ -59,15 +59,15 @@ exports.userBoard = (req, res) => {
 exports.updateExpireDay = (req, res) => {
   const id = req.params.id;
   console.log(id);
-  var updatedata = { expiredate: Date.now() };
+  var expireDate = { expiexpireDateredate: Date.now() };
   User.findByPk(id).then((user) => {
-    const remainday = user.expiredate - Date.now();
+    const remainday = user.expireDate - Date.now();
     if (remainday < 0) {
-      updatedata.expiredate = Date.now() + 4 * 7 * 24 * 3600 * 1000;
+      expireDate.expireDate = Date.now() + 4 * 7 * 24 * 3600 * 1000;
     } else {
-      updatedata.expiredate = remainday + Date.now() + 4 * 7 * 24 * 3600 * 1000;
+      expireDate.expireDate = remainday + Date.now() + 4 * 7 * 24 * 3600 * 1000;
     }
-    User.update(updatedata, {
+    User.update(expireDate, {
       where: { id: id }
     })
       .then((num) => {
@@ -107,7 +107,7 @@ exports.create = (req, res) => {
     email: req.body.email,
     password: bcrypt.hashSync(req.body.password, 8),
     roles: req.body.roles,
-    expiredate: req.body.expiredate
+    expireDate: req.body.expireDate
   };
 
   // Save user in the database
