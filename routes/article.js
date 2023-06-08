@@ -37,32 +37,45 @@ const testfunc = async (url, prompt, withimg) => {
   var contents = [];
   var imageUrls = [];
   var title = "";
-  await axios.get(url).then((response) => {
-    const html = response.data;
-    const $ = cheerio.load(html);
-    title = $("title").text();
-    $("p").each((index, element) => {
-      const text = $(element).text();
-      contents.push(text);
-    });
-    if (withimg) {
-      $("img").each((index, element) => {
-        var imgUrl = $(element).attr("src");
-        if (imgUrl.slice(0, 4) !== "http") {
-          const uurl = new URL(url);
-          const mainurl = uurl.origin;
-          imgUrl = mainurl + "/" + imgUrl;
-        }
-        imageUrls.push(imgUrl);
-      });
+  await axios
+    .get(url)
+    .then((response) => {
+      const html = response.data;
+      const $ = cheerio.load(html);
+      title = $("title").text();
+      $("p")
+        .each((index, element) => {
+          const text = $(element).text();
+          contents.push(text);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+      if (withimg) {
+        $("img")
+          .each((index, element) => {
+            var imgUrl = $(element).attr("src");
+            if (imgUrl.slice(0, 4) !== "http") {
+              const uurl = new URL(url);
+              const mainurl = uurl.origin;
+              imgUrl = mainurl + "/" + imgUrl;
+            }
+            imageUrls.push(imgUrl);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
 
-      imageUrls = imageUrls.filter(
-        (item) =>
-          item.slice(item.length - 4, item.length) !== ".svg" &&
-          item.slice(item.length - 4, item.length) !== ".png"
-      );
-    }
-  });
+        imageUrls = imageUrls.filter(
+          (item) =>
+            item.slice(item.length - 4, item.length) !== ".svg" &&
+            item.slice(item.length - 4, item.length) !== ".png"
+        );
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+    });
 
   var mainImgUrl = "";
 
@@ -99,12 +112,14 @@ artRouter.post("/", async (req, res) => {
   const withimg = req.body.withimg;
   const withemoji = req.body.withemoji;
   // const prompt = `\n Create summarized content as ${styles} with ${tones} topic as text foramt and create headline from this article as json format. The keys are 'headline' and 'content'`;
-  const prompt11 = `Summarize this articel as ${styles} which contanins different emojis at the first of every sentance and these emojis are related with the content of each sentance or paragraph, and as the topic of ${tones}`;
+  const prompt11 = `Summarize this articel into ${styles} using a ${tones}. Add relevant emoji's`;
   var prompt1 = "";
   if (!withemoji) {
-    prompt1 = `Summarize this articel as ${styles} and as the topic of ${tones}`;
+    // prompt1 = `Summarize this articel as ${styles} and as the topic of ${tones}`;
+    prompt1 = `Summarize this articel into ${styles} using a ${tones}.`;
   } else {
-    prompt1 = `Summarize this articel as ${styles} which contanins different emojis at the first of every sentance and these emojis are related with the content of each sentance or paragraph, and as the topic of ${tones}`;
+    //   prompt1 = `Summarize this articel as ${styles} which contanins different emojis at the first of every sentance and these emojis are related with the content of each sentance or paragraph, and as the topic of ${tones}`;
+    prompt1 = `Summarize this articel into ${styles} using a ${tones}. Add relevant emoji's`;
   }
   const prompt2 = "Create headline of this artice";
   const result = await Promise.all(
