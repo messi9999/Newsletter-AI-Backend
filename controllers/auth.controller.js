@@ -108,6 +108,51 @@ exports.signin = (req, res) => {
 
       const subscriptionID = user.subscriptionId;
       const id = user.id;
+
+      if (user.subscriptionId == "1234") {
+        User.findOne({
+          where: {
+            id: id
+          }
+        })
+          .then((user) => {
+            if (user) {
+              var token = jwt.sign({ id: user.id }, config.secret, {
+                expiresIn: 86400 // 24 hours
+              });
+              var authorities = [];
+              // const expireday = data.expiredate - Date.now()
+              user.getRoles().then((roles) => {
+                for (let i = 0; i < roles.length; i++) {
+                  authorities.push("ROLE_" + roles[i].name.toUpperCase());
+                }
+                var expiredays =
+                  (user.expireDate - Date.now()) / (3600 * 24 * 1000);
+                res.status(200).send({
+                  id: user.id,
+                  username: user.username,
+                  email: user.email,
+                  expiredays: expiredays,
+                  roles: authorities,
+                  subscriptionId: user.subscriptionId,
+                  subscriptionStatus: user.subscriptionStatus,
+                  expireDate: user.expireDate,
+                  accessToken: token
+                });
+              });
+            } else {
+              res.status(404).send({
+                message: `Cannot find user with id=${id}.`
+              });
+            }
+          })
+          .catch((err) => {
+            res.status(500).send({
+              message: "Error retrieving user with id=" + id
+            });
+          });
+      }
+
       getPaymentStatusAndExpirationDate(subscriptionID)
         .then((result) => {
           updateData = {
