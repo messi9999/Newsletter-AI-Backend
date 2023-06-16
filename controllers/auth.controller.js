@@ -10,6 +10,21 @@ const Op = db.Sequelize.Op;
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
 
+const getPaymentStatusAndExpirationDate = async (subscriptionId) => {
+  try {
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    const paymentStatus = subscription.status;
+    const expireDate = new Date(subscription.current_period_end * 1000); // Convert timestamp to Date object
+
+    return {
+      paymentStatus,
+      expireDate
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
 exports.signup = async (req, res) => {
   const email = req.body.email;
 
@@ -91,34 +106,78 @@ exports.signin = (req, res) => {
         });
       }
 
-      var token = jwt.sign({ id: user.id }, config.secret, {
-        expiresIn: 86400 // 24 hours
-      });
-
-      var authorities = [];
-      user.getRoles().then((roles) => {
-        for (let i = 0; i < roles.length; i++) {
-          authorities.push("ROLE_" + roles[i].name.toUpperCase());
-        }
-
-        const currentDate = new Date();
-        var expiredays = (user.expireDate - currentDate) / (1000 * 3600 * 24);
-
-        if (expiredays < 0) {
-          expiredays = 0;
-        }
-        res.status(200).send({
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          expiredays: expiredays,
-          roles: authorities,
-          subscriptionId: user.subscriptionId,
-          subscriptionStatus: user.subscriptionStatus,
-          expireDate: user.expireDate,
-          accessToken: token
+      const subscriptionID = user.subscriptionId;
+      const id = user.id;
+      getPaymentStatusAndExpirationDate(subscriptionID)
+        .then((result) => {
+          updateData = {
+            expireDate: result.expireDate
+          };
+          User.update(updateData, {
+            where: { id: id }
+          })
+            .then((num) => {
+              if (num == 1) {
+                User.findOne({
+                  where: {
+                    id: id
+                  }
+                })
+                  .then((user) => {
+                    if (user) {
+                      var token = jwt.sign({ id: user.id }, config.secret, {
+                        expiresIn: 86400 // 24 hours
+                      });
+                      var authorities = [];
+                      // const expireday = data.expiredate - Date.now()
+                      user.getRoles().then((roles) => {
+                        for (let i = 0; i < roles.length; i++) {
+                          authorities.push(
+                            "ROLE_" + roles[i].name.toUpperCase()
+                          );
+                        }
+                        var expiredays =
+                          (user.expireDate - Date.now()) / (3600 * 24 * 1000);
+                        res.status(200).send({
+                          id: user.id,
+                          username: user.username,
+                          email: user.email,
+                          expiredays: expiredays,
+                          roles: authorities,
+                          subscriptionId: user.subscriptionId,
+                          subscriptionStatus: user.subscriptionStatus,
+                          expireDate: user.expireDate,
+                          accessToken: token
+                        });
+                      });
+                    } else {
+                      res.status(404).send({
+                        message: `Cannot find user with id=${id}.`
+                      });
+                    }
+                  })
+                  .catch((err) => {
+                    res.status(500).send({
+                      message: "Error retrieving user with id=" + id
+                    });
+                  });
+              } else {
+                res.send({
+                  message: `Cannot update user with id=${id}. Maybe user was not found or req.body is empty!`
+                });
+              }
+            })
+            .catch((err) => {
+              res.status(500).send({
+                message: "Error updating user with id=" + id
+              });
+            });
+        })
+        .catch((error) => {
+          res.status(500).send({
+            message: error.raw.message
+          });
         });
-      });
     })
     .catch((err) => {
       res.status(500).send({ message: err.message });

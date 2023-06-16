@@ -14,7 +14,7 @@ module.exports = function (app) {
 
   app.get("/api/test/user/:id", [authJwt.verifyToken], controller.userBoard);
 
-  app.get("/api/text/user/updateExpireday/:id", [
+  app.get("/api/test/user/updateExpireday/:id", [
     authJwt.verifyToken,
     controller.updateExpireDay
   ]);
