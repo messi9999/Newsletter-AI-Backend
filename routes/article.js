@@ -16,10 +16,14 @@ async function findBiggestImage(imageUrls) {
     for (const imageUrl of imageUrls) {
       await fetchImageSize(imageUrl)
         .then((imageSize) => {
-          const size = imageSize.width * imageSize.height;
-          if (size > biggestImageSize) {
-            biggestImageUrl = imageUrl;
-            biggestImageSize = size;
+          try {
+            const size = imageSize.width * imageSize.height;
+            if (size > biggestImageSize) {
+              biggestImageUrl = imageUrl;
+              biggestImageSize = size;
+            }
+          } catch (error) {
+            console.log(error);
           }
         })
         .catch((error) => {
@@ -41,19 +45,21 @@ const testfunc = async (url, prompt, withimg) => {
     .get(url)
     .then((response) => {
       const html = response.data;
+
       const $ = cheerio.load(html);
       title = $("title").text();
-      $("p")
-        .each((index, element) => {
+      try {
+        $("p").each((index, element) => {
           const text = $(element).text();
           contents.push(text);
-        })
-        .catch((error) => {
-          console.log(error);
         });
+      } catch (error) {
+        console.log(error);
+      }
+
       if (withimg) {
-        $("img")
-          .each((index, element) => {
+        try {
+          $("img").each((index, element) => {
             var imgUrl = $(element).attr("src");
             if (imgUrl.slice(0, 4) !== "http") {
               const uurl = new URL(url);
@@ -61,10 +67,10 @@ const testfunc = async (url, prompt, withimg) => {
               imgUrl = mainurl + "/" + imgUrl;
             }
             imageUrls.push(imgUrl);
-          })
-          .catch((error) => {
-            console.log(error);
           });
+        } catch (error) {
+          console.log(error);
+        }
 
         imageUrls = imageUrls.filter(
           (item) =>
@@ -98,13 +104,6 @@ const testfunc = async (url, prompt, withimg) => {
   };
 };
 
-// "Summarize this article as " +
-//   styles +
-//   ".\n" +
-//   "Write a summary with " +
-//   tones +
-//   ".";
-// POST
 artRouter.post("/", async (req, res) => {
   const urls = req.body.urls;
   const tones = req.body.tones;
@@ -124,18 +123,15 @@ artRouter.post("/", async (req, res) => {
   // const prompt2 = "Create headline of this artice";
   const prompt2 =
     "You are an expert marketer, create a headline for this artice.";
-  const result = await Promise.all(
-    urls.map((url) => testfunc(url, [prompt1, prompt2], withimg))
-  );
-  // const totalcontents = result.map((item) => {
-  //   return item.content;
-  // });
-
-  // const totalresult = await summarize(totalcontents + "\\n" + prompt);
-  res.status(201).send({
-    result: result
-    // totalreulst: totalresult
-  });
+  Promise.all(urls.map((url) => testfunc(url, [prompt1, prompt2], withimg)))
+    .then((result) => {
+      res.status(201).send({
+        result: result
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+    });
 });
 
 module.exports = artRouter;
