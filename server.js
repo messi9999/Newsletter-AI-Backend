@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const http = require("http");
 const { title } = require("process");
-// const artRouter = require("./routes/article");
+const artRouter = require("./routes/article");
 // const payrouter = require("./routes/payment");
 
 const app = express();
@@ -21,8 +21,8 @@ app.get("/", async (req, res) => {
   res.send({ result: "Hello" });
 });
 
-//Route for create articles
-// app.use("/api/article", artRouter);
+// Route for create articles
+app.use("/api/article", artRouter);
 
 // //Route for payment
 // app.use("/api/payment", payrouter);
