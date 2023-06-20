@@ -120,7 +120,6 @@ artRouter.post("/", async (req, res) => {
     //   prompt1 = `Summarize this articel as ${styles} which contanins different emojis at the first of every sentance and these emojis are related with the content of each sentance or paragraph, and as the topic of ${tones}`;
     prompt1 = `Summarize this articel into ${styles} using a ${tones}. Add relevant emoji's`;
   }
-  // const prompt2 = "Create headline of this artice";
   const prompt2 =
     "You are an expert marketer, create a headline for this artice.";
   Promise.all(urls.map((url) => testfunc(url, [prompt1, prompt2], withimg)))
