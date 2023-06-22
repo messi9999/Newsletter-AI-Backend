@@ -2,7 +2,7 @@ const express = require("express");
 const axios = require("axios");
 const cheerio = require("cheerio");
 const http = require("http");
-const summarize = require("../func/openaicom");
+const openaiFuns = require("../func/openaicom");
 const { title } = require("process");
 const artRouter = express.Router();
 
@@ -41,6 +41,9 @@ const testfunc = async (url, prompt, withimg) => {
   var contents = [];
   var imageUrls = [];
   var title = "";
+  var mainImgUrl = "";
+  const dalleProm =
+    "Provide me a detailed prompt to generate realitical image of this article using openai DALLE";
   await axios
     .get(url)
     .then((response) => {
@@ -61,41 +64,66 @@ const testfunc = async (url, prompt, withimg) => {
         try {
           $("img").each((index, element) => {
             var imgUrl = $(element).attr("src");
-            if (imgUrl.slice(0, 4) !== "http") {
-              const uurl = new URL(url);
-              const mainurl = uurl.origin;
-              imgUrl = mainurl + "/" + imgUrl;
+            if (imgUrl) {
+              if (imgUrl.slice(0, 4) !== "http") {
+                const uurl = new URL(url);
+                const mainurl = uurl.origin;
+                imgUrl = mainurl + "/" + imgUrl;
+              }
+              imageUrls.push(imgUrl);
             }
-            imageUrls.push(imgUrl);
           });
         } catch (error) {
           console.log(error);
         }
-
-        imageUrls = imageUrls.filter(
-          (item) =>
-            item.slice(item.length - 4, item.length) !== ".svg" &&
-            item.slice(item.length - 4, item.length) !== ".png"
-        );
+        if (imageUrls.length > 0) {
+          imageUrls = imageUrls.filter(
+            (item) =>
+              item.slice(item.length - 4, item.length) !== ".svg" &&
+              item.slice(item.length - 4, item.length) !== ".png"
+          );
+        }
       }
     })
     .catch((error) => {
       console.log(error);
     });
 
-  var mainImgUrl = "";
-
   if (withimg) {
-    mainImgUrl = await findBiggestImage(imageUrls)
-      .then((mainImgUrl) => {
-        return mainImgUrl;
-      })
-      .catch((error) => {
-        console.error("Error finding the biggest image:", error);
-      });
+    if (imageUrls) {
+      mainImgUrl = await findBiggestImage(imageUrls)
+        .then((mainImgUrl) => {
+          return mainImgUrl;
+        })
+        .catch((error) => {
+          console.error("Error finding the biggest image:", error);
+        });
+    }
+    if (mainImgUrl === "") {
+      mainImgUrl = await openaiFuns
+        .summarize(`${contents} \n ${dalleProm}`)
+        .then(async (result) => {
+          return await openaiFuns
+            .generateImg(result.trim())
+            .then((res) => {
+              return res;
+            })
+            .catch((error) => {
+              return "";
+            });
+        })
+        .catch((error) => {
+          return "";
+        });
+    }
   }
-  const summarizedContent = await summarize(`${contents} \n ${prompt[0]}`);
-  const summarizedHeadline = await summarize(`${contents} \n ${prompt[1]}`);
+  const summarizedContent = await openaiFuns.summarize(
+    `${contents} \n ${prompt[0]}`
+  );
+  const summarizedHeadline = await openaiFuns.summarize(
+    `${contents} \n ${prompt[1]}`
+  );
+
   return {
     url: url,
     headline: summarizedHeadline,

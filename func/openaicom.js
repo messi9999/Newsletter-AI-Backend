@@ -43,4 +43,26 @@ const summarize = async (prom) => {
   return answer;
 };
 
-module.exports = summarize;
+const generateImg = async (prom) => {
+  const requestBody = {
+    prompt: prom,
+    n: 1,
+    size: "1024x1024"
+  };
+  var answer;
+  var iserror;
+  const response = await axios
+    .post("https://api.openai.com/v1/images/generations", requestBody, config)
+    .catch((error) => {
+      iserror = true;
+    });
+  if (iserror) {
+    answer = "DALLE failed!";
+  } else {
+    const data = await response;
+    answer = data.data.data[0].url;
+  }
+  return answer;
+};
+
+module.exports = { summarize, generateImg };
