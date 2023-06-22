@@ -43,7 +43,7 @@ const testfunc = async (url, prompt, withimg) => {
   var title = "";
   var mainImgUrl = "";
   const dalleProm =
-    "Provide me a detailed prompt to generate realitical image of this article using openai DALLE";
+    "Please provide detailed prompts from openai DALLE to generate cartoon images that reflect this article. Please write 3 or 4 sentences";
   await axios
     .get(url)
     .then((response) => {
