@@ -15,8 +15,8 @@ const decrypt = (text) => {
 const config = {
   headers: {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${decrypt(process.env.OPENAI_API_KEY)}`,
-  },
+    Authorization: `Bearer ${decrypt(process.env.OPENAI_API_KEY)}`
+  }
 };
 
 const summarize = async (prom) => {
@@ -25,7 +25,7 @@ const summarize = async (prom) => {
     prompt: prom,
     max_tokens: 500,
     temperature: 0.1,
-    n: 1,
+    n: 1
   };
   var answer;
   var iserror;
@@ -43,4 +43,26 @@ const summarize = async (prom) => {
   return answer;
 };
 
-module.exports = summarize;
+const generateImg = async (prom) => {
+  const requestBody = {
+    prompt: prom,
+    n: 1,
+    size: "1024x1024"
+  };
+  var answer;
+  var iserror;
+  const response = await axios
+    .post("https://api.openai.com/v1/images/generations", requestBody, config)
+    .catch((error) => {
+      iserror = true;
+    });
+  if (iserror) {
+    answer = "DALLE failed!";
+  } else {
+    const data = await response;
+    answer = data.data.data[0].url;
+  }
+  return answer;
+};
+
+module.exports = { summarize, generateImg };
